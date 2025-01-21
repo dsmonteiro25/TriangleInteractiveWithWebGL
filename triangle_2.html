@@ -5,6 +5,7 @@
         attribute vec4 vPosition;
         uniform vec2 uTranslation;
         uniform float uAngle;
+        uniform vec2 uCenter;
 
         void main() {
             float cosAngle = cos(uAngle);
@@ -15,7 +16,8 @@
                 0.0, 0.0, 1.0, 0.0,
                 0.0, 0.0, 0.0, 1.0
             );
-            gl_Position = rotation * (vPosition + vec4(uTranslation, 0.0, 0.0));
+            vec4 centeredPosition = vPosition - vec4(uCenter, 0.0, 0.0);
+            gl_Position = rotation * centeredPosition + vec4(uCenter + uTranslation, 0.0, 0.0);
         }
     </script>
 

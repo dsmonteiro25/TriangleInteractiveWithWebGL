@@ -1,8 +1,10 @@
 var gl;
 var translation = [0, 0];
 var angle = 0;
+var scale = 1.0;
 var dragging = false;
 var dragStart = [0, 0];
+var center = [0, 0];
 
 window.onload = function init() {
     var canvas = document.getElementById("gl-canvas");
@@ -17,6 +19,10 @@ window.onload = function init() {
         vec2(0, 0.5),
         vec2(0.5, -0.5),
     ];
+
+    // Calcular o baricentro do triângulo
+    center[0] = (vertices[0][0] + vertices[1][0] + vertices[2][0]) / 3;
+    center[1] = (vertices[0][1] + vertices[1][1] + vertices[2][1]) / 3;
 
     // Configuração do WebGL
     gl.viewport(0, 0, canvas.width, canvas.height);
@@ -36,15 +42,17 @@ window.onload = function init() {
     gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(vPosition);
 
-    // Obter localização das variáveis uniformes uTranslation e uAngle
+    // Obter localização das variáveis uniformes
     var uTranslation = gl.getUniformLocation(program, "uTranslation");
     var uAngle = gl.getUniformLocation(program, "uAngle");
+    var uCenter = gl.getUniformLocation(program, "uCenter");
 
-    // Atualizar tradução e rotação e renderizar o triângulo
+    // Atualizar tradução, rotação e escala, e renderizar o triângulo
     function update() {
         gl.clear(gl.COLOR_BUFFER_BIT);
         gl.uniform2fv(uTranslation, translation);
         gl.uniform1f(uAngle, angle);
+        gl.uniform2fv(uCenter, center);
         gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
 
