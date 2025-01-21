@@ -1,5 +1,8 @@
 var gl;
-var points;
+var translation = [0, 0];
+var angle = 0;
+var dragging = false;
+var dragStart = [0, 0];
 
 window.onload = function init() {
     var canvas = document.getElementById("gl-canvas");
@@ -10,9 +13,9 @@ window.onload = function init() {
 
     // Definição dos vértices do triângulo
     var vertices = [
-        vec2(-1, -1),
-        vec2(0, 1),
-        vec2(1, -1),
+        vec2(-0.5, -0.5),
+        vec2(0, 0.5),
+        vec2(0.5, -0.5),
     ];
 
     // Configuração do WebGL
@@ -21,10 +24,6 @@ window.onload = function init() {
 
     // Carregar shaders e inicializar buffers de atributos
     var program = initShaders(gl, "vertex-shader", "fragment-shader");
-    if (!program) {
-        console.error("Failed to initialize shaders.");
-        return;
-    }
     gl.useProgram(program);
 
     // Enviar os dados para a GPU
@@ -37,10 +36,56 @@ window.onload = function init() {
     gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(vPosition);
 
-    render();
-};
+    // Obter localização das variáveis uniformes uTranslation e uAngle
+    var uTranslation = gl.getUniformLocation(program, "uTranslation");
+    var uAngle = gl.getUniformLocation(program, "uAngle");
 
-function render() {
-    gl.clear(gl.COLOR_BUFFER_BIT);
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
-}
+    // Atualizar tradução e rotação e renderizar o triângulo
+    function update() {
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.uniform2fv(uTranslation, translation);
+        gl.uniform1f(uAngle, angle);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+    }
+
+    // Manipuladores de eventos de mouse
+    canvas.addEventListener("mousedown", function (event) {
+        dragging = true;
+        dragStart = [event.clientX, event.clientY];
+    });
+
+    canvas.addEventListener("mousemove", function (event) {
+        if (dragging) {
+            var dx = (event.clientX - dragStart[0]) / canvas.width * 2;
+            var dy = -(event.clientY - dragStart[1]) / canvas.height * 2;
+
+            // Calcular o deslocamento considerando a rotação atual
+            var cosAngle = Math.cos(angle);
+            var sinAngle = Math.sin(angle);
+            var deltaX = dx * cosAngle + dy * sinAngle;
+            var deltaY = -dx * sinAngle + dy * cosAngle;
+
+            translation[0] += deltaX;
+            translation[1] += deltaY;
+            dragStart = [event.clientX, event.clientY];
+            update();
+        }
+    });
+
+    canvas.addEventListener("mouseup", function () {
+        dragging = false;
+    });
+
+    // Manipuladores de eventos de teclado para rotação
+    window.addEventListener("keydown", function (event) {
+        var rotationSpeed = 0.1; // Ajuste a velocidade da rotação conforme necessário
+        if (event.key === "ArrowRight") {
+            angle -= rotationSpeed;
+        } else if (event.key === "ArrowLeft") {
+            angle += rotationSpeed;
+        }
+        update();
+    });
+
+    update();
+};

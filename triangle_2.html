@@ -3,9 +3,19 @@
 <head>
     <script id="vertex-shader" type="x-shader/x-vertex">
         attribute vec4 vPosition;
+        uniform vec2 uTranslation;
+        uniform float uAngle;
 
         void main() {
-            gl_Position = vPosition;
+            float cosAngle = cos(uAngle);
+            float sinAngle = sin(uAngle);
+            mat4 rotation = mat4(
+                cosAngle, sinAngle, 0.0, 0.0,
+                -sinAngle, cosAngle, 0.0, 0.0,
+                0.0, 0.0, 1.0, 0.0,
+                0.0, 0.0, 0.0, 1.0
+            );
+            gl_Position = rotation * (vPosition + vec4(uTranslation, 0.0, 0.0));
         }
     </script>
 
@@ -26,5 +36,6 @@
     <canvas id="gl-canvas" width="512" height="512">
         Oops ... your browser doesn't support the HTML5 canvas element
     </canvas>
+    <script type="text/javascript" src="script.js"></script>
 </body>
 </html>
