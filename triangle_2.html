@@ -5,6 +5,7 @@
         attribute vec4 vPosition;
         uniform vec2 uTranslation;
         uniform float uAngle;
+        uniform float uScale;
         uniform vec2 uCenter;
 
         void main() {
@@ -16,8 +17,16 @@
                 0.0, 0.0, 1.0, 0.0,
                 0.0, 0.0, 0.0, 1.0
             );
+
+            mat4 scale = mat4(
+                uScale, 0.0, 0.0, 0.0,
+                0.0, uScale, 0.0, 0.0,
+                0.0, 0.0, 1.0, 0.0,
+                0.0, 0.0, 0.0, 1.0
+            );
+
             vec4 centeredPosition = vPosition - vec4(uCenter, 0.0, 0.0);
-            gl_Position = rotation * centeredPosition + vec4(uCenter + uTranslation, 0.0, 0.0);
+            gl_Position = rotation * scale * centeredPosition + vec4(uCenter + uTranslation, 0.0, 0.0);
         }
     </script>
 
@@ -31,13 +40,14 @@
     <script type="text/javascript" src="../Common/Common/webgl-utils.js"></script>
     <script type="text/javascript" src="../Common/Common/initShaders.js"></script>
     <script type="text/javascript" src="../Common/Common/MV.js"></script>
-    <script type="text/javascript" src="triangle_2.js"></script>
 </head>
-
 <body>
     <canvas id="gl-canvas" width="512" height="512">
         Oops ... your browser doesn't support the HTML5 canvas element
     </canvas>
-    <script type="text/javascript" src="script.js"></script>
+    <br>
+    <button id="scaleUp">Aumentar Escala</button>
+    <button id="scaleDown">Reduzir Escala</button>
+    <script type="text/javascript" src="triangle_2.js"></script>
 </body>
 </html>
