@@ -1,3 +1,4 @@
+// Developed by Daniel Monteiro
 var gl;
 var translation = [0, 0];
 var angle = 0;
@@ -6,9 +7,9 @@ var dragging = false;
 var dragStart = [0, 0];
 var center = [0, 0];
 var vertices = [
-    vec2(-0.5, -0.5),
-    vec2(0, 0.5),
-    vec2(0.5, -0.5),
+    vec2(-0.3, -0.3),
+    vec2(0, 0.3),
+    vec2(0.3, -0.3),
 ];
 
 
@@ -23,9 +24,8 @@ window.onload = function init() {
     center[0] = (vertices[0][0] + vertices[1][0] + vertices[2][0]) / 3;
     center[1] = (vertices[0][1] + vertices[1][1] + vertices[2][1]) / 3;
 
-    // Configuração do WebGL
     gl.viewport(0, 0, canvas.width, canvas.height);
-    gl.clearColor(1.0, 1.0, 1.0, 1.0);
+    gl.clearColor(0.9, 0.9, 0.9, 1.0);
 
     var program = initShaders(gl, "vertex-shader", "fragment-shader");
     gl.useProgram(program);
@@ -38,36 +38,48 @@ window.onload = function init() {
     gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(vPosition);
 
-    var uTranslation = gl.getUniformLocation(program, "uTranslation");
-    var uAngle = gl.getUniformLocation(program, "uAngle");
-    var uScale = gl.getUniformLocation(program, "uScale");
-    var uCenter = gl.getUniformLocation(program, "uCenter");
+    var Translation = gl.getUniformLocation(program, "Translation");
+    var Angle = gl.getUniformLocation(program, "Angle");
+    var Scale = gl.getUniformLocation(program, "Scale");
+    var Center = gl.getUniformLocation(program, "Center");
 
-    function update() {
-        gl.clear(gl.COLOR_BUFFER_BIT);
-        gl.uniform2fv(uTranslation, translation);
-        gl.uniform1f(uAngle, angle);
-        gl.uniform1f(uScale, scale);
-        gl.uniform2fv(uCenter, center);
-        gl.drawArrays(gl.TRIANGLES, 0, 3);
-    }
-
-    // Botões para escalar
-    document.getElementById("scaleUp").onclick = function () {
-        scale += 0.1;
-        update();
+    document.getElementById("scaleUp").onclick = function () {  // Escala
+        scale = scale + 0.1;
+        render();
     };
     document.getElementById("scaleDown").onclick = function () {
         if (scale > 0.1) {
-            scale -= 0.1;
-            update();
+            scale = scale - 0.1;
+            render();
         }
     };
 
-    // Eventos de mouse para arrastar
-    canvas.addEventListener("mousedown", function (event) {
-        dragStart = [event.clientX, event.clientY];
-        dragging = true;
+     window.addEventListener("keydown", function (event) {  // Rotação
+        var rotationSpeed = 0.1;
+        if (event.key === "ArrowRight") {
+            angle = angle - rotationSpeed;
+        } else if (event.key === "ArrowLeft") {
+            angle = angle + rotationSpeed;
+        }
+        render();
+    });
+
+    canvas.addEventListener("mousedown", function (event) {  // Translação com o clicar e arrastar(OBS: Negocio dificil demais rsrsrs)
+        var bbox = canvas.getBoundingClientRect();
+        var x = 2 * (event.clientX - bbox.left) / canvas.width - 1;
+        var y = 2 * (canvas.height - (event.clientY - bbox.top)) / canvas.height - 1;
+
+        var transformedVertices = vertices.map(function(vertex) {
+            return vec2(
+                vertex[0] + translation[0],
+                vertex[1] + translation[1]
+            );
+        });
+
+        if (clickTriangle(x, y, transformedVertices)) {
+            dragStart = [event.clientX, event.clientY];
+            dragging = true;
+        }
     });
 
     canvas.addEventListener("mousemove", function (event) {
@@ -77,7 +89,7 @@ window.onload = function init() {
             translation[0] += dx;
             translation[1] += dy;
             dragStart = [event.clientX, event.clientY];
-            update();
+            render();
         }
     });
 
@@ -85,16 +97,27 @@ window.onload = function init() {
         dragging = false;
     });
 
-    // Teclado para rotação
-    window.addEventListener("keydown", function (event) {
-        var rotationSpeed = 0.1;
-        if (event.key === "ArrowRight") {
-            angle -= rotationSpeed;
-        } else if (event.key === "ArrowLeft") {
-            angle += rotationSpeed;
+    function clickTriangle(px, py, vertices) {
+        function sign(p1, p2, p3) {
+            return (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1]);
         }
-        update();
-    });
+    
+        var b1, b2, b3;
+        b1 = sign([px, py], vertices[0], vertices[1]) < 0.0;
+        b2 = sign([px, py], vertices[1], vertices[2]) < 0.0;
+        b3 = sign([px, py], vertices[2], vertices[0]) < 0.0;
+    
+        return ((b1 == b2) && (b2 == b3));
+    }
 
-    update();
+    function render() {
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.uniform2fv(Translation, translation);
+        gl.uniform1f(Angle, angle);
+        gl.uniform1f(Scale, scale);
+        gl.uniform2fv(Center, center);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+    }
+
+    render();
 };

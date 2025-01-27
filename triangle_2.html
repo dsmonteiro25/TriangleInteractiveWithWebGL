@@ -1,32 +1,33 @@
+<!--Developed by Daniel Monteiro-->
 <!DOCTYPE html>
 <html>
 <head>
     <script id="vertex-shader" type="x-shader/x-vertex">
         attribute vec4 vPosition;
-        uniform vec2 uTranslation;
-        uniform float uAngle;
-        uniform float uScale;
-        uniform vec2 uCenter;
+        uniform vec2 Translation;
+        uniform float Angle;
+        uniform float Scale;
+        uniform vec2 Center;
 
         void main() {
-            float cosAngle = cos(uAngle);
-            float sinAngle = sin(uAngle);
+            float cosA = cos(Angle);
+            float sinA = sin(Angle);
             mat4 rotation = mat4(
-                cosAngle, sinAngle, 0.0, 0.0,
-                -sinAngle, cosAngle, 0.0, 0.0,
+                cosA, sinA, 0.0, 0.0,
+                -sinA, cosA, 0.0, 0.0,
                 0.0, 0.0, 1.0, 0.0,
                 0.0, 0.0, 0.0, 1.0
             );
 
             mat4 scale = mat4(
-                uScale, 0.0, 0.0, 0.0,
-                0.0, uScale, 0.0, 0.0,
+                Scale, 0.0, 0.0, 0.0,
+                0.0, Scale, 0.0, 0.0,
                 0.0, 0.0, 1.0, 0.0,
                 0.0, 0.0, 0.0, 1.0
             );
 
-            vec4 centeredPosition = vPosition - vec4(uCenter, 0.0, 0.0);
-            gl_Position = rotation * scale * centeredPosition + vec4(uCenter + uTranslation, 0.0, 0.0);
+            vec4 centeredPosition = vPosition - vec4(Center, 0.0, 0.0);
+            gl_Position = rotation * scale * centeredPosition + vec4(Center + Translation, 0.0, 0.0);
         }
     </script>
 
@@ -34,7 +35,7 @@
         precision mediump float;
 
         void main() {
-            gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0); // Vermelho
+            gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0); // Azul
         }
     </script>
     <script type="text/javascript" src="../Common/Common/webgl-utils.js"></script>
